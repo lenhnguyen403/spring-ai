@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: spring-ai
+
+  # OPENAI config
+  #  ai:
+  #    openai:
+  #      api-key: ${OPENAI_API_KEY}
+  #      chat:
+  #        options:
+  #          model: gpt-4.0-mini
+
+  # GEMINI config
+  ai:
+    openai:
+      api-key: ${GEMINI_API_KEY}
+      chat:
+        base-url: https://generativelanguage.googleapis.com
+        completions-path: /v1beta/openai/chat/completions
+        options:
+          model: gemini-3-flash-preview
+
+
+server:
+  port: 9000
