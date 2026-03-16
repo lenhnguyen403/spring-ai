@@ -9,6 +9,9 @@ package com.app.springai.service;
 
 import com.app.springai.dto.ChatRequest;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
 
 /**
@@ -25,8 +28,16 @@ public class ChatService {
     }
 
     public String generate(ChatRequest request) {
-        return chatClient.prompt()
-                .user(request.getMessage())
+        SystemMessage systemMessage = new SystemMessage("""
+                You are Devteria.AI
+                """);
+
+        UserMessage userMessage = new UserMessage(request.getMessage());
+
+        Prompt prompt = new Prompt(systemMessage, userMessage);
+
+        return chatClient.prompt(prompt)
+//                .user(request.getMessage())
                 .call()
                 .content();
     }
