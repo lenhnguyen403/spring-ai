@@ -1,6 +1,25 @@
+server:
+  port: 9000
+
 spring:
   application:
     name: spring-ai
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/spring-ai
+    username: postgres
+    password: 1234
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform:
+    properties:
+      hibernate:
+        dialect:
+        format_sql:
 
   # OPENAI config
   #  ai:
@@ -20,6 +39,7 @@ spring:
         options:
           model: gemini-3-flash-preview
 
-
-server:
-  port: 9000
+        memory:
+          repository:
+            jdbc:
+              initialize-schema: always

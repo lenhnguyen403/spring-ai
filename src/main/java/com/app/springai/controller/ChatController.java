@@ -62,4 +62,9 @@ public class ChatController {
                                             @RequestParam("message") String message) {
         return chatService.chatWithImageBill(file, message);
     }
+
+    @PostMapping("/chat/memory")
+    public String chatMemory(@RequestBody ChatRequest request) {
+        return chatService.chatMemory(request);
+    }
 }
