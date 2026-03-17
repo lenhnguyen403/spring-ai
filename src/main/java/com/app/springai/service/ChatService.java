@@ -12,6 +12,10 @@ import com.app.springai.dto.ChatRequest;
 import com.app.springai.dto.ExpenseInfo;
 import com.app.springai.dto.FilmInfo;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.ChatOptions;
@@ -33,8 +37,19 @@ import java.util.List;
 public class ChatService {
     private final ChatClient chatClient;
 
-    public ChatService(ChatClient.Builder chatClient) {
-        this.chatClient = chatClient.build();
+    private final JdbcChatMemoryRepository chatMemoryRepository;
+
+    public ChatService(ChatClient.Builder chatClient, JdbcChatMemoryRepository jdbcChatMemoryRepository) {
+        this.chatMemoryRepository = jdbcChatMemoryRepository;
+
+        ChatMemory chatMemory = MessageWindowChatMemory.builder()
+                .chatMemoryRepository(jdbcChatMemoryRepository)
+                .maxMessages(30)
+                .build();
+
+        this.chatClient = chatClient
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .build();
     }
 
     public String generate(ChatRequest request) {
@@ -48,6 +63,7 @@ public class ChatService {
     public String chatWithPrompts(ChatRequest request) {
         SystemMessage systemMessage = new SystemMessage("""
                 You are Devteria.AI
+                You should response with a formal voice
                 """);
 
         UserMessage userMessage = new UserMessage(request.getMessage());
@@ -108,6 +124,24 @@ public class ChatService {
         return chatClient.prompt(prompt)
                 .call()
                 .entity(ExpenseInfo.class);
+    }
+
+    public String chatMemory(ChatRequest request) {
+        String conversationId = "conversation1";
+        SystemMessage systemMessage = new SystemMessage("""
+                You are Devteria.AI
+                """);
+
+        UserMessage userMessage = new UserMessage(request.getMessage());
+
+        Prompt prompt = new Prompt(systemMessage, userMessage);
+
+        return chatClient.prompt(prompt)
+                .advisors(advisorSpec -> advisorSpec.param(
+                        ChatMemory.CONVERSATION_ID, conversationId
+                ))
+                .call()
+                .content();
     }
 
     public List<BillItem> chatWithImageBill(MultipartFile file, String message) {
